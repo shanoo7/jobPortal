@@ -1,0 +1,153 @@
+
+
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import { Briefcase, MapPinIcon } from "lucide-react";
+import { fetchJobById, updateJobStatus } from "@/redux/slices/jobSlice";
+import { StatusSelector } from "./StatusSelector";
+import { ApplicationCard } from "@/components/ApplicationCard";
+import { ApplyJob } from "./ApplyJob";
+import { toast } from "sonner";
+
+export default function JobPage() {
+  const { id } = useParams();
+  const dispatch = useDispatch();
+  const { singleJob: job, loading, error } = useSelector((state) => state.job);
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(fetchJobById(id));
+  }, [dispatch, id]);
+
+  // Debug log to verify data
+  console.log("Job Data Debug:", {
+    jobId: job?._id,
+    isOpen: job?.isOpen,
+    created_by: job?.created_by,
+    currentUser: user?._id,
+    isRecruiter: user?.role === "recruiter" && 
+                (job?.created_by?._id?.toString() === user?._id?.toString() || 
+                 job?.created_by?.toString() === user?._id?.toString())
+  });
+
+  if (loading) return <div className="text-center p-8">Loading job details...</div>;
+  if (error) return <div className="text-center p-8">Error: {error}</div>;
+  if (!job) return <div className="text-center p-8">Job not found</div>;
+
+  const isRecruiter = user?.role === "recruiter" && 
+                     (job?.created_by?._id?.toString() === user?._id?.toString() || 
+                      job?.created_by?.toString() === user?._id?.toString());
+
+  const hasApplied = job?.applications?.some(
+    app => app.applicant?._id === user?._id || app.applicant === user?._id
+  );
+
+  const handleStatusChange = async (value) => {
+    try {
+      await dispatch(
+        updateJobStatus({ 
+          jobId: job._id, 
+          status: value === "open" 
+        })
+      ).unwrap();
+      toast.success(`Job marked as ${value}`);
+      // Refresh job data after status change
+      dispatch(fetchJobById(id));
+    } catch (err) {
+      toast.error(err || "Failed to update job status");
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">{job.title}</h1>
+          {job.company?.logo_url && (
+            <img 
+              src={job.company.logo_url} 
+              alt={job.company.name} 
+              className="h-12 mt-4 object-contain"
+            />
+          )}
+        </div>
+        
+        {isRecruiter ? (
+          <StatusSelector 
+            value={job.isOpen ? "open" : "closed"} 
+            onChange={handleStatusChange}
+          />
+        ) : (
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+            job.isOpen 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {job.isOpen ? (
+              <>
+                <span className="mr-1">✓</span> Open
+              </>
+            ) : (
+              <>
+                <span className="mr-1">✗</span> Closed
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="md:col-span-2  rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-4">Job Details</h2>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="flex items-center gap-2 text-gray-700">
+              <MapPinIcon className="h-5 w-5" />
+              <span>{job.location}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-700">
+              <Briefcase className="h-5 w-5" />
+              <span>{job.applications?.length || 0} Applicants</span>
+            </div>
+          </div>
+
+          <h3 className="font-semibold mb-2 text-gray-800">About the Job</h3>
+          <p className="text-gray-700 mb-6 whitespace-pre-line">{job.description}</p>
+
+          <h3 className="font-semibold mb-2 text-gray-800">Requirements</h3>
+          <ul className="list-disc pl-5 space-y-1 text-gray-700">
+            {job.requirements?.length > 0 ? (
+              job.requirements.map((req, i) => (
+                <li key={i} className="whitespace-pre-line">{req}</li>
+              ))
+            ) : (
+              <li>No specific requirements listed</li>
+            )}
+          </ul>
+        </div>
+
+        <div className="md:col-span-1 space-y-4">
+          {!isRecruiter ? (
+            <ApplyJob job={job} user={user} applied={hasApplied} />
+          ) : job.applications?.length > 0 ? (
+            <div className=" rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Applications</h2>
+              <div className="space-y-4">
+                {job.applications.map((application) => (
+                  <ApplicationCard 
+                    key={application._id} 
+                    application={application} 
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className=" rounded-lg shadow p-6 text-center text-gray-500">
+              <p>No applications received yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

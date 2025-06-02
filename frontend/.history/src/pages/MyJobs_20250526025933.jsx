@@ -1,0 +1,129 @@
+
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  
+  deleteJob,
+  updateJobStatus,
+  updateJob,
+  fetchAdminJobs,
+} from "@/redux/slices/jobSlice";
+import { Button } from "@/components/ui/button";
+import EditJobModal from "@/components/EditJobModal";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import ApplicationsModal from "@/components/ApplicationsModal";
+// import EditJobModal from "@/components/jobs/EditJobModal";
+// import DeleteConfirmationModal from "@/components/jobs/DeleteConfirmationModal";
+// import ApplicationsModal from "@/components/jobs/ApplicationsModal";
+
+const MyJobs = () => {
+  const dispatch = useDispatch();
+  const { allAdminJobs, isLoading } = useSelector((state) => state.job);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [applications, setApplications] = useState(null);
+  const [modalType, setModalType] = useState(""); // 'edit', 'delete', 'applications'
+
+
+
+useEffect(() => {
+  dispatch(fetchAdminJobs());
+}, [dispatch]);
+
+
+  const handleEdit = (job) => {
+    console.log("Editing job:", job);
+    setSelectedJob(job);
+    setModalType("edit");
+  };
+
+  const handleDelete = (job) => {
+     console.log("Deleting job:", job);
+    setSelectedJob(job);
+    setModalType("delete");
+  };
+
+  const handleApplications = (job) => {
+    setApplications(job.applications || []);
+    setModalType("applications");
+  };
+
+  const handleCloseModal = () => {
+    setSelectedJob(null);
+    setApplications(null);
+    setModalType("");
+  };
+
+
+  //EDIT
+  const handleSaveEdit = (updatedJob) => {
+    dispatch(updateJob(updatedJob));
+    handleCloseModal();
+  };
+
+  const handleConfirmDelete = (jobId) => {
+    dispatch(deleteJob(jobId));
+    handleCloseModal();
+  };
+
+  const handleToggleStatus = (job) => {
+    dispatch(updateJobStatus({ jobId: job._id, isOpen: !job.isOpen }));
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold mb-6">My Posted Jobs</h1>
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : !allAdminJobs || allAdminJobs.length === 0 ? (
+        <p>No jobs found.</p>
+      ) : (
+        <div className="space-y-4">
+          {allAdminJobs.map((job) => (
+            <div
+              key={job._id}
+              className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between"
+            >
+              <div>
+                <h2 className="text-xl font-bold">{job.title}</h2>
+                <p className="text-gray-600">{job.location}</p>
+                <p className="text-sm mt-1">
+                  Status:{" "}
+                  <span className={job.isOpen ? "text-green-600" : "text-red-600"}>
+                    {job.isOpen ? "Open" : "Closed"}
+                  </span>
+                </p>
+              </div>
+              <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
+
+                <Button onClick={() => handleEdit(job)}>Edit</Button>
+                <Button variant="destructive" onClick={() => handleDelete(job)}>Delete</Button>
+                <Button onClick={() => handleToggleStatus(job)}>
+                  {job.isOpen ? "Close" : "Reopen"}
+                </Button>
+                <Button onClick={() => handleApplications(job)}>View Applicants</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modals */}
+      {modalType === "edit" && selectedJob && (
+        <EditJobModal job={selectedJob} onClose={handleCloseModal} onSave={handleSaveEdit} />
+      )}
+      {modalType === "delete" && selectedJob && (
+        <DeleteConfirmationModal
+          job={selectedJob}
+          onClose={handleCloseModal}
+          onDelete={handleConfirmDelete}
+        />
+      )}
+      {modalType === "applications" && applications && (
+        <ApplicationsModal applications={applications} onClose={handleCloseModal} />
+      )}
+    </div>
+  );
+};
+
+export default MyJobs;
+
