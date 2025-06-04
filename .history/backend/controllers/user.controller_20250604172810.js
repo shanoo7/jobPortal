@@ -104,8 +104,8 @@ export const login = async (req, res) => {
     return res.status(200)
   .cookie("token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: false,
+    sameSite: "lax",
     maxAge: 24 * 60 * 60 * 1000,
   })
   .json({

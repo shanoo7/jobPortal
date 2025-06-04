@@ -101,21 +101,15 @@ export const login = async (req, res) => {
     //   success: true
     // })
 
-    return res.status(200)
-  .cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    maxAge: 24 * 60 * 60 * 1000,
-  })
-  .json({
-    message: `Welcome back ${user.fullname}`,
-    user,
-    success: true
-  });
+    return res.status(200).cookie("token", token, {
+  maxAge: 1 * 24 * 60 * 60 * 1000,
+  httpOnly: true,
+  secure: true,                 // ✅ must be true for https (like Render)
+  sameSite: 'None'              // ✅ allow cross-origin cookies
+});
 
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
 }
 
