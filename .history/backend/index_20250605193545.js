@@ -215,14 +215,8 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   connectDB(); // Initialize database connection
+  console.log(`\n===== Server Started =====`);
   console.log(`Server running on port ${PORT}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Allowed Origins: ${allowedOrigins.join(', ')}`);
 });
-
-
-// app.listen(PORT, () => {
-//   connectDB(); // Initialize database connection
-//   console.log(`\n===== Server Started =====`);
-//   console.log(`Server running on port ${PORT}`);
-//   console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-//   console.log(`Allowed Origins: ${allowedOrigins.join(', ')}`);
-// });

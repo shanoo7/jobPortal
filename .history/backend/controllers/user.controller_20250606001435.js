@@ -117,7 +117,7 @@ export const login = async (req, res) => {
     secure: process.env.NODE_ENV === "production", // true in production
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 24 * 60 * 60 * 1000,
-    domain: process.env.NODE_ENV === "production" ? "job-portal-alpha-puce.vercel.app" : "localhost", // Adjust domain for production
+    domain: process.env.NODE_ENV === "production" ? ".job-portal-alpha-puce.vercel.app" : "localhost", // Adjust domain for production
   })
   .json({
     message: `Welcome back ${user.fullname}`,
