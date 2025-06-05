@@ -143,18 +143,10 @@ const authSlice = createSlice({
       })
 
       // LOGOUT
-      .addCase(logoutUser.pending, (state) => {
-  state.loading = true;
-})
-.addCase(logoutUser.fulfilled, (state) => {
-  state.loading = false;
-  state.user = null;
-  state.likedJobs = [];
-})
-.addCase(logoutUser.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-})
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.likedJobs = [];
+      })
 
       // UPDATE PROFILE
       .addCase(updateUserProfile.pending, (state) => {
