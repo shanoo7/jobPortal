@@ -111,34 +111,19 @@ export const login = async (req, res) => {
   //   success: true
   // });
 
-  // return res.status(200)
-  // .cookie("token", token, {
-  //   httpOnly: true,
-  //   secure: process.env.NODE_ENV === "production", // true in production
-  //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  //   maxAge: 24 * 60 * 60 * 1000,
-  //   domain: process.env.NODE_ENV === "production" ? "localhost" : "localhost", // Adjust domain for production
-  // })
-  // .json({
-  //   message: `Welcome back ${user.fullname}`,
-  //   user,
-  //   success: true
-  // });
-
   return res.status(200)
   .cookie("token", token, {
     httpOnly: true,
-    secure: true, // Must be true on production (HTTPS)
-    sameSite: "none", // Must be 'none' for cross-site cookie
+    secure: process.env.NODE_ENV === "production", // true in production
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 24 * 60 * 60 * 1000,
-    // domain: "job-portal-alpha-puce.vercel.app", // OR remove completely
+    domain: process.env.NODE_ENV === "production" ? "localhost" : "localhost", // Adjust domain for production
   })
   .json({
     message: `Welcome back ${user.fullname}`,
     user,
     success: true
   });
-
 
   } catch (error) {
     console.error(error); 

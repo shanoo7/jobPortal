@@ -165,7 +165,7 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
 // ====================== Response Debugging Middleware ======================
-app.use((_, res, next) => {
+app.use((req, res, next) => {
   const originalSend = res.send;
   res.send = function(body) {
     console.log('\n===== Outgoing Response =====');
@@ -174,6 +174,7 @@ app.use((_, res, next) => {
     if (res.getHeaders()['set-cookie']) {
       console.log('Cookies being set:', res.getHeaders()['set-cookie']);
     }
+    console.log('Body:', body);
     originalSend.call(this, body);
   };
   next();

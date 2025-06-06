@@ -131,7 +131,7 @@ export const login = async (req, res) => {
     secure: true, // Must be true on production (HTTPS)
     sameSite: "none", // Must be 'none' for cross-site cookie
     maxAge: 24 * 60 * 60 * 1000,
-    // domain: "job-portal-alpha-puce.vercel.app", // OR remove completely
+    domain: "job-portal-alpha-puce.vercel.app", // OR remove completely
   })
   .json({
     message: `Welcome back ${user.fullname}`,
