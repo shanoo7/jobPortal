@@ -248,8 +248,8 @@ app.use(cookieParser());
 
 // ========== CORS CONFIG ==========
 const allowedOrigins = [
-  process.env.FRONTEND_LOCAL_URL,
-  process.env.FRONTEND_PRODUCTION_URL,
+  process.env.FRONTEND_LOCAL_URL || "http://localhost:5173",
+  process.env.FRONTEND_PRODUCTION_URL || "https://job-portal-alpha-puce.vercel.app",
   /\.vercel\.app$/, // Allow all Vercel preview deployments
 ];
 
