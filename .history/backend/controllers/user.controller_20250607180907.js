@@ -95,22 +95,62 @@ export const login = async (req, res) => {
       role: user.role,
       profile: user.profile
     }
+
  
 
-  return res.status(200)
+  // return res.status(200)
+  // .cookie("token", token, {
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",  // true on prod
+  //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  //   maxAge: 24 * 60 * 60 * 1000,
+  // })
+  // .json({
+  //   message: `Welcome back ${user.fullname}`,
+  //   user,
+  //   success: true
+  // });
+
+res
   .cookie("token", token, {
     httpOnly: true,
-    secure: true, // Must be true on production (HTTPS)
-    sameSite: "none", // Must be 'none' for cross-site cookie
-    maxAge: 24 * 60 * 60 * 1000,
-    // domain: "job-portal-alpha-puce.vercel.app", // OR remove completely
+    secure: true, // ✅ Vercel पर हमेशा true
+    sameSite: "none", // ✅ Cross-site के लिए जरूरी
+    domain: getCookieDomain(req), // ⚡ नया फंक्शन (नीचे देखें)
+    path: "/",
+    maxAge: 24 * 60 * 60 * 1000, // 1 दिन
+    partitioned: true, // ✅ Chrome के नए rules के लिए
+    priority: "high" // ✅ Cookie priority
   })
   .json({
     message: `Welcome back ${user.fullname}`,
-    user,
+    user: {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      role: user.role,
+      profile: user.profile
+    },
     success: true
   });
 
+// नया helper function
+function getCookieDomain(req) {
+  if (process.env.NODE_ENV !== "production") return undefined;
+  
+  const host = req.get('host') || req.get('x-forwarded-host');
+  if (!host) return ".vercel.app";
+  
+  // Vercel preview URLs के लिए
+  if (host.endsWith('.vercel.app')) {
+    return host.includes('--')
+      ? `${host.split('--')[1]}` // Preview deployment
+      : ".vercel.app"; // Production deployment
+  }
+  
+  // Custom domain के लिए
+  return `.${host.split('.').slice(-2).join('.')}`;
+}
 
   } catch (error) {
     console.error(error); 

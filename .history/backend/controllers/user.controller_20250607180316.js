@@ -95,21 +95,34 @@ export const login = async (req, res) => {
       role: user.role,
       profile: user.profile
     }
+
  
 
-  return res.status(200)
-  .cookie("token", token, {
-    httpOnly: true,
-    secure: true, // Must be true on production (HTTPS)
-    sameSite: "none", // Must be 'none' for cross-site cookie
-    maxAge: 24 * 60 * 60 * 1000,
-    // domain: "job-portal-alpha-puce.vercel.app", // OR remove completely
-  })
+  // return res.status(200)
+  // .cookie("token", token, {
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",  // true on prod
+  //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  //   maxAge: 24 * 60 * 60 * 1000,
+  // })
+
+  res.cookie("token", token, {
+  httpOnly: true,
+  secure: true, // Must be true for Vercel
+  sameSite: "none", // Required for cross-site cookies
+  domain: process.env.NODE_ENV === "production" 
+    ? ".vercel.app" // For Vercel deployments
+    : undefined, // For localhost
+  path: "/",
+  maxAge: 24 * 60 * 60 * 1000,
+  partitioned: true // Important for Chrome's new cookie rules
+});
   .json({
     message: `Welcome back ${user.fullname}`,
     user,
     success: true
   });
+
 
 
   } catch (error) {
